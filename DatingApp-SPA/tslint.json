@@ -4,6 +4,8 @@
     "codelyzer"
   ],
   "rules": {
+    "no-shadowed-variable": false,
+    "no-string-literal": false,
     "align": {
       "options": [
         "parameters",
