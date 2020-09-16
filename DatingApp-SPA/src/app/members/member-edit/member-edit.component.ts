@@ -15,6 +15,7 @@ import { UserService } from 'src/app/_services/user.service';
 export class MemberEditComponent implements OnInit {
   @ViewChild('editForm', { static: true }) editForm: NgForm;
   user: User;
+  photoUrl: string;
   @HostListener('window:beforeunload', ['event'])
   // tslint:disable-next-line: typedef
   unloadNotification($event: any) {
@@ -35,11 +36,8 @@ export class MemberEditComponent implements OnInit {
     this.route.data.subscribe(
       (data) => {
         this.user = data['user'];
-      },
-      (error) => {
-        this.alertify.error(error);
-      }
-    );
+      });
+    this.authService.currentPhotoUrl.subscribe(photoUrl => this.photoUrl = photoUrl);
   }
 
   // tslint:disable-next-line: typedef
@@ -51,5 +49,10 @@ export class MemberEditComponent implements OnInit {
       }, error => {
         this.alertify.error(error);
       });
+  }
+
+  // tslint:disable-next-line: typedef
+  updateMainPhoto(photoUrl: string) {
+    this.user.photoUrl = photoUrl;
   }
 }
