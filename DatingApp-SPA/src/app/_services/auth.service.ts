@@ -46,7 +46,7 @@ register(user: User){
 }
 
 // tslint:disable-next-line: typedef
-loggdedIn(){
+loggedIn(){
   const token = localStorage.getItem('token');
   return !this.jwtHelper.isTokenExpired(token);
 }

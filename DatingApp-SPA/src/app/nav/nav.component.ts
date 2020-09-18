@@ -40,7 +40,7 @@ export class NavComponent implements OnInit {
 
   // tslint:disable-next-line: typedef
   loggedIn() {
-    return this.authService.loggdedIn();
+    return this.authService.loggedIn();
   }
 
   // tslint:disable-next-line: typedef

@@ -1,7 +1,6 @@
 import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { error } from 'protractor';
 import { User } from 'src/app/_models/user';
 import { AlertifyService } from 'src/app/_services/alertify.service';
 import { AuthService } from 'src/app/_services/auth.service';
