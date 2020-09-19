@@ -3,76 +3,147 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
+import { Message } from '../_models/Message';
 import { PaginatedResult } from '../_models/Pagination';
 import { User } from '../_models/user';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UserService {
-baseUrl = environment.apiUrl;
+  baseUrl = environment.apiUrl;
 
-constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-// tslint:disable-next-line: typedef
-getUsers(page?, itemsPerPage?, userParams?, likesParam?): Observable<PaginatedResult<User[]>> {
-  const paginatedResult: PaginatedResult<User[]> = new PaginatedResult<User[]>();
+  // tslint:disable-next-line: typedef
+  getUsers(
+    page?,
+    itemsPerPage?,
+    userParams?,
+    likesParam?
+  ): Observable<PaginatedResult<User[]>> {
+    const paginatedResult: PaginatedResult<User[]> = new PaginatedResult<
+      User[]
+    >();
 
-  let params = new HttpParams();
+    let params = new HttpParams();
 
-  if (page != null && itemsPerPage != null){
-    params = params.append('pageNumber', page);
-    params = params.append('pageSize', itemsPerPage);
+    if (page != null && itemsPerPage != null) {
+      params = params.append('pageNumber', page);
+      params = params.append('pageSize', itemsPerPage);
+    }
+
+    if (userParams != null) {
+      params = params.append('minAge', userParams.minAge);
+      params = params.append('maxAge', userParams.maxAge);
+      params = params.append('gender', userParams.gender);
+      params = params.append('orderBy', userParams.orderBy);
+    }
+
+    if (likesParam === 'Likers') {
+      params = params.append('likers', 'true');
+    }
+
+    if (likesParam === 'Likees') {
+      params = params.append('likees', 'true');
+    }
+
+    return this.http
+      .get<User[]>(this.baseUrl + 'users', { observe: 'response', params })
+      .pipe(
+        map((response) => {
+          paginatedResult.result = response.body;
+          if (response.headers.get('Pagination') != null) {
+            paginatedResult.pagination = JSON.parse(
+              response.headers.get('Pagination')
+            );
+          }
+          return paginatedResult;
+        })
+      );
   }
 
-  if (userParams != null) {
-    params = params.append('minAge', userParams.minAge);
-    params = params.append('maxAge', userParams.maxAge);
-    params = params.append('gender', userParams.gender);
-    params = params.append('orderBy', userParams.orderBy);
+  getUser(id: number): Observable<User> {
+    return this.http.get<User>(this.baseUrl + 'users/' + id);
   }
 
-  if (likesParam === 'Likers') {
-    params = params.append('likers', 'true');
+  // tslint:disable-next-line: typedef
+  updateUser(id: number, user: User) {
+    return this.http.put(this.baseUrl + 'users/' + id, user);
   }
 
-  if (likesParam === 'Likees') {
-    params = params.append('likees', 'true');
+  // tslint:disable-next-line: typedef
+  setMainPhoto(userId: number, id: number) {
+    return this.http.post(
+      this.baseUrl + 'users/' + userId + '/photos/' + id + '/setMain',
+      {}
+    );
   }
 
-  return this.http.get<User[]>(this.baseUrl + 'users', { observe: 'response', params})
-  .pipe(
-    map(response => {
-      paginatedResult.result = response.body;
-      if (response.headers.get('Pagination') != null){
-        paginatedResult.pagination = JSON.parse(response.headers.get('Pagination'));
-      }
-      return paginatedResult;
-    })
-  );
-}
+  // tslint:disable-next-line: typedef
+  deletePhoto(userId: number, id: number) {
+    return this.http.delete(this.baseUrl + 'users/' + userId + '/photos/' + id);
+  }
 
-getUser(id: number): Observable<User> {
-  return this.http.get<User>(this.baseUrl + 'users/' + id);
-}
+  // tslint:disable-next-line: typedef
+  sendLike(id: number, recepientId: number) {
+    return this.http.post(
+      this.baseUrl + 'users/' + id + '/like/' + recepientId,
+      {}
+    );
+  }
 
-// tslint:disable-next-line: typedef
-updateUser(id: number, user: User){
-  return this.http.put(this.baseUrl + 'users/' + id, user);
-}
+  // tslint:disable-next-line: typedef
+  getMessages(id: number, page?, itemsPerPage?, messageContainer?) {
+    const paginatedResult: PaginatedResult<Message[]> = new PaginatedResult<
+      Message[]
+    >();
 
-// tslint:disable-next-line: typedef
-setMainPhoto(userId: number, id: number){
-  return this.http.post(this.baseUrl + 'users/' + userId + '/photos/' + id + '/setMain', {});
-}
+    let params = new HttpParams();
 
-// tslint:disable-next-line: typedef
-deletePhoto(userId: number, id: number){
-  return this.http.delete(this.baseUrl + 'users/' + userId + '/photos/' + id);
-}
+    params = params.append('MessageContainer', messageContainer);
 
-// tslint:disable-next-line: typedef
-sendLike(id: number, recepientId: number){
-  return this.http.post(this.baseUrl + 'users/' + id + '/like/' + recepientId, {});
-}
+    if (page != null && itemsPerPage != null) {
+      params = params.append('pageNumber', page);
+      params = params.append('pageSize', itemsPerPage);
+    }
+
+    return this.http
+      .get<Message[]>(this.baseUrl + 'users/' + id + '/messages', {
+        observe: 'response',
+        params,
+      })
+      .pipe(
+        map((response) => {
+          paginatedResult.result = response.body;
+          if (response.headers.get('Pagination') !== null) {
+            paginatedResult.pagination = JSON.parse(
+              response.headers.get('Pagination')
+            );
+          }
+
+          return paginatedResult;
+        })
+      );
+  }
+
+  // tslint:disable-next-line: typedef
+  getMessageThread(id: number, recipientId: number) {
+    return this.http.get<Message[]>(this.baseUrl + 'users/' + id + '/messages/thread/' + recipientId);
+  }
+
+  // tslint:disable-next-line: typedef
+  sendMessage(id: number, message: Message) {
+    return this.http.post(this.baseUrl + 'users/' + id + '/messages', message);
+  }
+
+  // tslint:disable-next-line: typedef
+  deleteMessage(id: number, userId: number) {
+    return this.http.post(this.baseUrl + 'users/' + userId + '/messages/' + id, {});
+  }
+
+  // tslint:disable-next-line: typedef
+  markAsRead(userId: number, messageId: number) {
+    this.http.post(this.baseUrl + 'users/' + userId + '/messages/' + messageId + '/read', {}).subscribe();
+  }
 }
